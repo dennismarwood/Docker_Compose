@@ -1,0 +1,59 @@
+version: '3.2'
+#Build, start, stop, etc for the build environment
+services:
+  
+  #Rocket front end
+  dev_front:
+    container_name: dev_front
+    build:
+      context: ../../../front/
+      dockerfile: development.Dockerfile
+    image: front:dev 
+    ports:
+      - "8000:8000"
+    volumes:
+      - type: bind
+        source: "../../../front"
+        target: /app
+    command: cargo watch -x 'run --bin front'
+    environment:
+      - CARGO_TARGET_DIR=docker_target
+    #logging:
+    #depends_on:
+      #- dev_back
+
+  #Rocket back end
+  dev_back:
+    container_name: dev_back
+    build:
+      context: ../../../back/
+      dockerfile: development.Dockerfile
+    image: back:dev
+    #expose:
+      #- "8001"
+    ports:
+      - "8001:8001"
+    env_file:
+      - back_secret.env
+    volumes:
+      - type: bind
+        source: "../../../back"
+        target: /app
+    command: cargo watch -x 'run --bin back'
+    environment:
+      - CARGO_TARGET_DIR=docker_target
+    depends_on:
+      - dev_db
+
+  #mysql db
+  dev_db:
+    container_name: dev_db
+    image: mysql:8.0.30
+    #expose:
+      #- "8002"
+    ports:
+      - "8002:3306"
+    env_file:
+      db_secret.env
+    volumes:
+      - /home/dennis/Projects/db/mysql_docker_volume/:/var/lib/mysql

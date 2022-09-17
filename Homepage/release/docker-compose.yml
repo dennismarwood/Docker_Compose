@@ -1,0 +1,52 @@
+version: '3.2'
+#Rocket has different behavior for builds with debug and release. This file will build rocket with the release flag.
+#This file is used to facilitate rare testing of the application compiled with a release flag in a development environment only.
+#If you are testing some release application with a debug application (say rel_back + dev_db) it is necessary to combine this network with 
+#another running network.
+#A running docker container can be manaully set with 'docker network connect development_default rel_back'
+#To find existing networks use 'docker network inspect'
+networks:
+  default:
+    name: development_default
+    external: true
+services:
+  #Rocket front end
+  rel_front:
+    container_name: rel_front
+    build:
+      context: ../../front/
+      dockerfile: release.Dockerfile
+    image: front:rel #Name and tag of the built image. Note that w/ "build:", compose will build the image. It won't pull it.
+    ports:
+      - "8000:8000"
+    command: ["./front"]
+    #logging:
+    #depends_on:
+      #- dev_back
+
+  #Rocket back end
+  rel_back:
+    container_name: rel_back
+    build:
+      context: ../../back/ #https://www.howtogeek.com/devops/understanding-the-docker-build-context-why-you-should-use-dockerignore/
+      dockerfile: release.Dockerfile
+    image: back:rel
+    ports:
+      - "8001:8001"
+    env_file:
+      - back_secret.env
+    command: ["./back"]
+    #command: ["tail", "-f", "/dev/null"] #Keep a container running/
+
+  #mysql db
+  rel_db:
+    container_name: rel_db
+    image: mysql:8.0.30
+    #expose:
+      #- "8002"
+    ports:
+      - "8002:3306"
+    env_file:
+      - db_secret.env
+    volumes:
+      - /home/dennis/Homepage/db/mysql_docker_volume/:/var/lib/mysql
