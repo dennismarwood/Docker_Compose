@@ -4,7 +4,7 @@ services:
   
   #Rocket front end
   dev_front:
-    container_name: dev_front
+    container_name: front
     build:
       context: ../../../front/
       dockerfile: development.Dockerfile
@@ -24,7 +24,7 @@ services:
 
   #Rocket back end
   dev_back:
-    container_name: dev_back
+    container_name: back
     build:
       context: ../../../back/
       dockerfile: development.Dockerfile
@@ -47,7 +47,7 @@ services:
 
   #mysql db
   dev_db:
-    container_name: dev_db
+    container_name: db
     image: mysql:8.0.30
     #expose:
       #- "8002"
